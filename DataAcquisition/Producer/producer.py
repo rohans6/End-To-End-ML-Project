@@ -22,10 +22,10 @@ string_serializer = StringSerializer('utf_8')
 producer=Producer(kafka_config)
 
 # Remove previous Logs
-if os.path.exists("DataAcquisition\Logs"):
-    shutil.rmtree("DataAcquisition\Logs")
-    os.mkdir("DataAcquisition\Logs")
-# Callback function
+if os.path.exists("DataAcquisition\Logs\\producer.log"):
+    os.remove("DataAcquisition\Logs\\producer.log")
+
+# Logging configuration
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(levelname)s %(message)s',
@@ -44,14 +44,21 @@ def callback_function(error,message):
         logging.info(f"Record Successfully Produced:{message.key()}")
 
 # Produce data to Kafka
+batch=[]
 for topic in os.listdir(data_dir):
     for file in os.listdir(os.path.join(data_dir,topic)):
         file_path=os.path.join(data_dir,topic,file)
-        for chunk in pd.read_csv(file_path,chunksize=1000):
+        for chunk in pd.read_csv(file_path,chunksize=200):
             records=chunk.astype(str).to_dict(orient='records')
-            for record in records:
-                producer.produce(topic=topic,key=string_serializer(str(uuid4()), record),value=json_serializer(record,SerializationContext(topic,MessageField.VALUE)),on_delivery=callback_function)
-                producer.poll(1.0)
+            producer.produce(topic=topic,key=string_serializer(str(uuid4()),records),value=json_serializer(records,SerializationContext(topic,MessageField.VALUE)),on_delivery=callback_function)
+            producer.poll(0.0) # Non blocking call
+            #for record in records:
+                #batch.append(record)
+                #if len(batch)==20:
+                    #producer.produce(topic=topic,key=string_serializer(str(uuid4()), batch),value=json_serializer(batch,SerializationContext(topic,MessageField.VALUE)),on_delivery=callback_function)
+                    #batch=[]
+                #producer.produce(topic=topic,key=string_serializer(str(uuid4()), record),value=json_serializer(record,SerializationContext(topic,MessageField.VALUE)),on_delivery=callback_function)
+                #producer.poll(0.0) # Non blocking call
 
 #Flushing data
 producer.flush()
