@@ -32,7 +32,7 @@ logging.basicConfig(
 )
 
 # Consume data from Kafka
-kafka_config.update({'group.id':'group_consumer1','auto.offset.reset': 'earliest','enable.auto.commit':False})
+kafka_config.update({'group.id':'group_consumer2','auto.offset.reset': 'earliest','enable.auto.commit':False})
 consumer=Consumer(kafka_config)
 json_deserializer=JSONDeserializer(schema_string)
 for topic in os.listdir('Data'):    
@@ -41,8 +41,9 @@ for topic in os.listdir('Data'):
     # Creating sql object
     sql_obj=sql.SQL()
     none_counter=0
-    i,j=0,0
-    records=[]
+    #i,j=0,0
+    #records=[]
+    first_batch=True
     while True:
         try:
             msg=consumer.poll(1.0)
@@ -56,17 +57,23 @@ for topic in os.listdir('Data'):
                 data=json_deserializer(msg.value(), SerializationContext(msg.topic(),MessageField.VALUE))
                 logging.info(f'Received message: {msg.key()}')
 
-                # Store data in my sql database
-                if i==0:
-                    columns,values=list(data.keys()),list(data.values())
-                    i+=1
+                if first_batch:
+                    columns=list(data[0].keys())
                     sql_obj.create_table(columns)
-                records.append(tuple(data.values()))
-                j+=1
-                if j>30:
-                    sql_obj.add_many(records)
-                    j=0
-                    records=[]
+                    first_batch=False
+                sql_obj.add_many([tuple(record.values()) for record in data])
+
+                # Store data in my sql database
+                #if i==0:
+                    #columns,values=list(data.keys()),list(data.values())
+                    #i+=1
+                    #sql_obj.create_table(columns)
+                #records.append(tuple(data.values()))
+                #j+=1
+                #if j>30:
+                    #sql_obj.add_many(records)
+                    #j=0
+                    #records=[]
 
         except KeyboardInterrupt:
             break
