@@ -1,6 +1,3 @@
-# Import necessary libraries
-import json
-import os
 
 # Define two types of configurations one for schema registry and another for Kafka 
 
