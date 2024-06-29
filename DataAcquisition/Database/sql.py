@@ -15,13 +15,13 @@ class SQL():
         for col in columns:
             string += f"{col} TEXT, "
         string=string.rstrip(", ")
-        query=f"CREATE TABLE IF NOT EXISTS sensor_data ({string})" 
+        query=f"CREATE TABLE IF NOT EXISTS sensortopic ({string})" 
         self.cursor.execute(query)
     def add_record(self,data:list):
-        self.cursor.execute(f"INSERT INTO sensor_data VALUES {tuple(data.values())}")
+        self.cursor.execute(f"INSERT INTO sensortopic VALUES {tuple(data.values())}")
     def add_many(self,data:list):
         entries=str(data)[1:-1]
-        self.cursor.execute(f"INSERT INTO sensor_data VALUES "+entries)
+        self.cursor.execute(f"INSERT INTO sensortopic VALUES "+entries)
     def close(self):
         self.mydb.commit()
         self.cursor.close()

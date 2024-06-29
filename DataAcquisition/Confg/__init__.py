@@ -10,6 +10,8 @@ kafka_config = {
     'sasl.mechanisms': 'PLAIN',       # Optional, depending on your security setup
     'sasl.username': 'OHLXG66PJJDAOZTA', # Optional, depending on your security setup
     'sasl.password': 'H+w0JfC59R/oVMcADBF7e7rEeiR6XdXTsdZtlA4gXSrbUudQoFrOA2ol5O/zl9HS', # Optional, depending on your security setup
+    'compression.type' :'gzip', # Optional, depending on your security setup
+    'batch.size': 16384
 }
 
 schema_config={
@@ -27,14 +29,25 @@ sample_file=os.path.join(data_dir,sample_topic,os.listdir(os.path.join(data_dir,
 
 with open(sample_file,'r') as file_object:
     columns=file_object.readline().strip().split(',')
+item_schema = {
+    "type": "object",
+    "properties": {},
+    "required": columns
+}
+
+for column in columns:
+    item_schema["properties"][column] = {"type": "string","description": "This is a string"}
 schema_string={ "$id": "http://example.com/myURI.schema.json",
             "$schema": "http://json-schema.org/draft-07/schema#",
-            "additionalProperties": False,
-            "description": "Sample schema to help you get started.",
-            "properties": dict(),
+            "type":"array",
+            "items":item_schema,
+            #"additionalProperties": False,
+            "description": "Schema for batch of records",
+            #"properties": dict(),
             "title": "SampleRecord",
-            "type": "object"}
-for column in columns:
-    schema_string['properties'].update({column: {"type": "string","description": "This is a string"}})
+            #"type": "object"
+            }
+#for column in columns:
+    #schema_string['properties'].update({column: {"type": "string","description": "This is a string"}})
 schema_string=json.dumps(schema_string)
 print(schema_string)
