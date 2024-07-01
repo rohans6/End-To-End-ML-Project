@@ -38,7 +38,7 @@ json_deserializer=JSONDeserializer(schema_string)
 for topic in os.listdir('Data'):    
     consumer.subscribe([topic])
 
-    # Creating sql object
+    # Creating Database object
     sql_obj=sql.SQL()
     none_counter=0
     #i,j=0,0
@@ -59,9 +59,9 @@ for topic in os.listdir('Data'):
 
                 if first_batch:
                     columns=list(data[0].keys())
-                    sql_obj.create_table(columns)
+                    sql_obj.create(columns)
                     first_batch=False
-                sql_obj.add_many([tuple(record.values()) for record in data])
+                sql_obj.insert_many([tuple(record.values()) for record in data])
 
                 # Store data in my sql database
                 #if i==0:
