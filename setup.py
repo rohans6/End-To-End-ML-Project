@@ -5,7 +5,7 @@ with open('requirements.txt','r') as file_object:
     libraries=[]
     while True:
         l=file_object.readline().replace('\n','')
-        if l!="":
+        if l!="" and  l!='-e .':
             libraries.append(l)
         else:
             break
