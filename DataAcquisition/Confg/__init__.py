@@ -1,5 +1,7 @@
 
 # Define two types of configurations one for schema registry and another for Kafka 
+import os
+import json
 
 kafka_config = {
     'bootstrap.servers': 'pkc-12576z.us-west2.gcp.confluent.cloud:9092',

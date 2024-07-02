@@ -12,10 +12,12 @@ import sys
 sys.path.append('D:\DataScience\Projects\SensorProject\End-To-End-ML-Project')
 from DataAcquisition.Confg import *
 from DataAcquisition.Database import sql
+from DataAcquisition.Database import mongodb
 from uuid import uuid4
 import logging
 import mysql.connector
 import shutil
+
 
 # Remove previous Logs
 if os.path.exists("DataAcquisition\Logs\\consumer.log"):
@@ -39,7 +41,7 @@ for topic in os.listdir('Data'):
     consumer.subscribe([topic])
 
     # Creating Database object
-    sql_obj=sql.SQL()
+    db_obj=mongodb.MongoDb()
     none_counter=0
     #i,j=0,0
     #records=[]
@@ -59,9 +61,9 @@ for topic in os.listdir('Data'):
 
                 if first_batch:
                     columns=list(data[0].keys())
-                    sql_obj.create(columns)
+                    db_obj.create('sensorfaultprediction')
                     first_batch=False
-                sql_obj.insert_many([tuple(record.values()) for record in data])
+                db_obj.insert_many([record for record in data])
 
                 # Store data in my sql database
                 #if i==0:
@@ -77,7 +79,7 @@ for topic in os.listdir('Data'):
 
         except KeyboardInterrupt:
             break
-    sql_obj.close()
+    db_obj.close()
 
 # Close the consumer
 consumer.close()
