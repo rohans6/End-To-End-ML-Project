@@ -1,6 +1,6 @@
 import pymongo
-from exception import SensorException
-from logger import Logger
+from Sensor.exception import SensorException
+from Sensor.logger import Logger
 from Sensor.Constant.database import *
 import numpy as np
 import pandas as pd
@@ -21,10 +21,10 @@ class MongoDbClient:
             data=list(self.collection.find())
             self.df=pd.DataFrame(data)
             self.df.drop(columns=['_id'],axis=1,inplace=True)
-            self.df.rename({'na':np.nan},inplace=True)
+            self.df=self.df.replace({'na':np.nan})
             return self.df
         except Exception:
-            print(SensorException("Error occured whil exporting mongo db data to dataframe"))
+            raise SensorException("Error occured whil exporting mongo db data to dataframe")
 
         
 

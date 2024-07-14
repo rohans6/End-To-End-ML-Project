@@ -8,4 +8,11 @@ jsonschema==3.2.0
 dnspython
 mysql-connector-python
 scikit-learn
+matplotlib
+seaborn
+imblearn
+miceforest==1.0.6
+xgboost
+catboost
+pyyaml
 -e .
