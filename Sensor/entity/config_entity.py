@@ -61,5 +61,14 @@ class ModelPusherConfiguration:
         self.model_pusher_dir=os.path.join(self.artifact_dir,training_pipeline.model_pusher_dir)
         self.model_pusher_file_path=os.path.join(self.model_pusher_dir,training_pipeline.model_name)
 
+class TrainingPipelineConfig:
 
+    def __init__(self,timestamp=datetime.now()):
+        timestamp = timestamp.strftime("%m_%d_%Y_%H_%M_%S")
+        self.pipeline_name: str = training_pipeline.pipeline_name
+        self.project_dir=training_pipeline.project_directory
+        self.artifact_dir=os.path.join(self.project_dir,training_pipeline.artifact_directory)
+        self.time_stamp_artifact_dir: str = os.path.join('Artifact', timestamp)
+        self.timestamp: str = timestamp
+        self.saved_model_dir= os.path.join(self.project_dir,training_pipeline.saved_model_dir)
         

@@ -4,15 +4,18 @@ from Sensor.Components.data_transformation import DataTransformer
 from Sensor.Components.model_trainer import ModelTrainer
 from Sensor.Components.model_evaluation import ModelEvaluation
 from Sensor.Components.model_pusher import ModelPusher
-from Sensor.entity.config_entity import DataIngestionConfiguration,DataValidationConfiguration,DataTransformerConfiguration,ModelTrainerConfiguration,ModelPusherConfiguration,ModelEvaluatorConfiguration
+from Sensor.entity.config_entity import DataIngestionConfiguration,DataValidationConfiguration,DataTransformerConfiguration,ModelTrainerConfiguration,ModelPusherConfiguration,ModelEvaluatorConfiguration,TrainingPipelineConfig
 from Sensor.logger import Logger
 from Sensor.exception import SensorException
 from Sensor.Constant.training_pipeline import log_dir
 import os
+from Sensor.cloud_storage.s3_syncer import S3Sync
 class TrainingPipeline:
     def __init__(self):
         self.dataingestionconfig=DataIngestionConfiguration()
         self.logger=Logger(log_dir, "training_pipeline.log")
+        self.training_pipeline_config=TrainingPipelineConfig()
+        self.s3syncer = S3Sync()
     def start_ingestion(self):
         try:
             self.ingester=DataIngestion(self.dataingestionconfig)
@@ -56,6 +59,19 @@ class TrainingPipeline:
             return pusherart
         except Exception as e:
             raise SensorException("Error occurred while pushing the model")
+    def sync_artifact_dir_to_s3(self):
+        try:
+            aws_buket_url = f"s3://sensor-fault/artifact/{self.training_pipeline_config.timestamp}"
+            self.s3_sync.sync_folder_to_s3(folder = self.training_pipeline_config.artifact_dir,aws_buket_url=aws_buket_url)
+        except Exception as e:
+            raise SensorException(e,sys)
+            
+    def sync_saved_model_dir_to_s3(self):
+        try:
+            aws_buket_url = f"s3://sensor-fault/{os.path.join("saved_models")}"
+            self.s3_sync.sync_folder_to_s3(folder = os.path.join("saved_models"),aws_buket_url=aws_buket_url)
+        except Exception as e:
+            raise SensorException(e,sys)
     def start_pipeline(self):
         try:
             dataingestionart=self.start_ingestion()
@@ -73,7 +89,10 @@ class TrainingPipeline:
                 raise SensorException("Model evaluation result is not accepted")
             pusherart=self.start_pusher(evaluationart)
             self.logger.log_message("Model pushing completed successfully")
+            self.sync_artifact_dir_to_s3()
+            self.sync_saved_model_dir_to_s3()
             return pusherart
         except Exception as e:
+            self.sync_artifact_dir_to_s3()
             raise SensorException("Error occurred while running the training pipeline")
 

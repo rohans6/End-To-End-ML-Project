@@ -46,3 +46,6 @@ model_name='model.pkl'
 # Define folders for Model pusher
 saved_model_dir=os.path.join('saved_models')
 model_pusher_dir='model_pusher'
+
+# define folders for training
+pipeline_name='sensor'
