@@ -4,7 +4,7 @@ from Sensor.Components.data_transformation import DataTransformer
 from Sensor.Components.model_trainer import ModelTrainer
 from Sensor.Components.model_evaluation import ModelEvaluation
 from Sensor.Components.model_pusher import ModelPusher
-from Sensor.entity.config_entity import DataIngestionConfiguration,DataValidationConfiguration,DataTransformerConfiguration,ModelTrainerConfiguration,ModelPusherConfiguration
+from Sensor.entity.config_entity import DataIngestionConfiguration,DataValidationConfiguration,DataTransformerConfiguration,ModelTrainerConfiguration,ModelPusherConfiguration,ModelEvaluatorConfiguration
 from Sensor.logger import Logger
 from Sensor.exception import SensorException
 from Sensor.Constant.training_pipeline import log_dir
@@ -44,7 +44,7 @@ class TrainingPipeline:
             raise SensorException("Error occurred while training the model")
     def start_model_evaluator(self,datavalidationart,modeltrainerart):
         try:
-            self.evaluator=ModelEvaluation(datavalidationart,modeltrainerart,ModelTrainerConfiguration())
+            self.evaluator=ModelEvaluation(datavalidationart,modeltrainerart,ModelEvaluatorConfiguration())
             evaluationart=self.evaluator.evaluate_model()
             return evaluationart
         except Exception as e:
@@ -67,7 +67,10 @@ class TrainingPipeline:
             modeltrainerart=self.start_model_trainer(datatransformerart)
             self.logger.log_message("Model training completed successfully")
             evaluationart=self.start_model_evaluator(datavalidationart,modeltrainerart)
+            print(evaluationart)
             self.logger.log_message("Model evaluation completed successfully")
+            if not evaluationart.is_model_accepted:
+                raise SensorException("Model evaluation result is not accepted")
             pusherart=self.start_pusher(evaluationart)
             self.logger.log_message("Model pushing completed successfully")
             return pusherart

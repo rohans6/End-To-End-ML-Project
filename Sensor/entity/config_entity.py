@@ -46,7 +46,7 @@ class ModelTrainerConfiguration:
 # Define ModelEvaluation Configuration
 class ModelEvaluatorConfiguration:
     def __init__(self):
-        pass
+        self.threshold=0.5
 
 # Define Model Pusher Configuration
 class ModelPusherConfiguration:

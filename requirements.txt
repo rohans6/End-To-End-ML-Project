@@ -15,4 +15,5 @@ miceforest==1.0.6
 xgboost
 catboost
 pyyaml
+flask
 -e .

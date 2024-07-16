@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Training and Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+        .container h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .container form {
+            display: flex;
+            flex-direction: column;
+        }
+        .container form input, .container form button {
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .container form button {
+            background: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .container form button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Model Training and Prediction</h1>
+        <form id="train-form">
+            <button type="button" onclick="trainModel()">Train Model</button>
+        </form>
+        <form id="predict-form" enctype="multipart/form-data">
+            <input type="file" id="file" name="file" accept=".csv">
+            <button type="button" onclick="uploadFile()">Predict</button>
+        </form>
+        <div id="response"></div>
+    </div>
+
+    <script>
+        function trainModel() {
+            fetch('/train', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response').innerText = JSON.stringify(data);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function uploadFile() {
+            const formData = new FormData();
+            const fileField = document.querySelector('input[type="file"]');
+
+            formData.append('file', fileField.files[0]);
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response').innerText = JSON.stringify(data);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

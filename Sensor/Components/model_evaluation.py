@@ -26,7 +26,7 @@ class ModelEvaluation:
             model_resolver=ModelResolver(path)
             if not model_resolver.is_model_exists():
                 self.logger.log_message("No trained model found in the specified directory")
-                return ModelEvaluatorArtifact(None,None,self.modeltrainerartifact.trained_model_path)
+                return ModelEvaluatorArtifact(True,None,self.modeltrainerartifact.trained_model_path)
             self.logger.log_message("Models found in saved models directory")
             test_df=pd.read_csv(self.datavalidationartifact.valid_test_path)
             test_df=test_df.drop(self.drop_cols,axis=1)
@@ -38,13 +38,20 @@ class ModelEvaluation:
             best_model=self.modeltrainerartifact.trained_model_path
             is_model_accepted=True
             self.logger.log_message("Performed prediction on test dataset using recent model and obtained f1 score")
-            for timestamp in os.listdir(path):
-                previous_model=load_object(os.path.join(path,timestamp,model_name))
-                previous_predictions=previous_model.predict(features)
-                previous_f1=metrics.f1_score(labels,previous_predictions)
-                if previous_f1>trained_f1:
-                    best_model=os.path.join(path,timestamp,model_name)
-                    is_model_accepted=False
+            latest_model_path=model_resolver.get_latest_model_path()
+            latest_model=load_object(latest_model_path)
+            latest_predictions=latest_model.predict(features)
+            latest_f1=metrics.f1_score(labels,latest_predictions)
+            print(trained_f1,latest_f1)
+            if trained_f1-latest_f1<=self.modelevaluationconfig.threshold:
+                is_model_accepted=False
+            #for timestamp in os.listdir(path):
+                #previous_model=load_object(os.path.join(path,timestamp,model_name))
+                #previous_predictions=previous_model.predict(features)
+                #previous_f1=metrics.f1_score(labels,previous_predictions)
+                #if previous_f1>trained_f1:
+                    #best_model=os.path.join(path,timestamp,model_name)
+                    #is_model_accepted=False
             self.logger.log_message("Done with comparing with all previous models")
             return ModelEvaluatorArtifact(is_model_accepted,best_model,self.modeltrainerartifact.trained_model_path)
         except Exception as e:

@@ -163,3 +163,5 @@ cython_debug/
 Artifact/
 DataAcquisition/Confg
 saved_models/
+rohan-sensor_accessKeys.csv
+sensor-key.pem
