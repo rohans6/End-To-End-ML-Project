@@ -18,8 +18,14 @@ class DataValidation:
             self.datavalidationconfig=datavalidationconfig
             self.__schema_file=read_yaml_file(schema_file)
             self.logger=Logger(log_dir,'DataValidation.log')
+            if os.path.exists(self.datavalidationconfig.datavalidationfolder):
+                shutil.rmtree(self.datavalidationconfig.datavalidationfolder)
+            os.makedirs(self.datavalidationconfig.datavalidationfolder)
+            os.makedirs(self.datavalidationconfig.valid_folder)
+            os.makedirs(self.datavalidationconfig.invalid_folder)
+            os.makedirs(self.datavalidationconfig.drift_report_folder)
         except Exception as e:
-            raise SensorException("Error occurred while reading schema file")
+            raise SensorException("Error occurred while doing basic validation configurations")
     def validate_number_columns(self,df):
         try:
             if len(self.__schema_file['columns'])==df.shape[1]:
@@ -65,10 +71,10 @@ class DataValidation:
                     self.logger.log_message(f"Covariance shift detected in column: {col}")
                 report.update({col:[result.pvalue,is_shift]})
             try:
-                if not os.path.exists(os.path.dirname(self.datavalidationconfig.drift_report_filepath)):
-                    os.mkdir(self.datavalidationconfig.drift_report_folder)
-                else:
-                    shutil.rmtree(self.datavalidationconfig.drift_report_filepath)
+                #if not os.path.exists(os.path.dirname(self.datavalidationconfig.drift_report_filepath)):
+                    #os.mkdir(self.datavalidationconfig.drift_report_folder)
+                #else:
+                    #shutil.rmtree(self.datavalidationconfig.drift_report_filepath)
                 write_yaml_file(self.datavalidationconfig.drift_report_filepath,report,True)
                 self.logger.log_message("Drift report written successfully")
             except Exception as e:
@@ -91,9 +97,9 @@ class DataValidation:
             raise SensorException("Column names in training data do not match the schema file")
         if not self.validate_column_names(testing_df):
             raise SensorException("Column names in testing data do not match the schema file")
-        if os.path.exists(self.datavalidationconfig.datavalidation_folder):
-            shutil.rmtree(self.datavalidationconfig.datavalidation_folder)
-        os.makedirs(self.datavalidationconfig.datavalidation_folder)
+        #if os.path.exists(self.datavalidationconfig.datavalidation_folder):
+            #shutil.rmtree(self.datavalidationconfig.datavalidation_folder)
+        #os.makedirs(self.datavalidationconfig.datavalidation_folder)
         drift_status=self.detect_covariance_shift(training_df,testing_df)
 
         return DataValidationArtifact(drift_status,self.dataingestionartifact.training_file,self.dataingestionartifact.testing_file,None,None,self.datavalidationconfig.drift_report_filepath)

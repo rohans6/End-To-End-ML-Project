@@ -23,9 +23,9 @@ class DataIngestion:
         self.logger.log_message("Sucessfully created database object")
         self.logger.log_message("Trying to create Artifact and Ingested folders")
         try:
-            if os.path.exists(self.dataingestionconfig.artifact_dir):
-                shutil.rmtree(self.dataingestionconfig.artifact_dir)
-            os.makedirs(self.dataingestionconfig.artifact_dir)
+            if os.path.exists(self.dataingestionconfig.dataingestionfolder):
+                shutil.rmtree(self.dataingestionconfig.dataingestionfolder)
+            os.makedirs(self.dataingestionconfig.dataingestionfolder)
             os.makedirs(self.dataingestionconfig.feature_store)
             os.makedirs(self.dataingestionconfig.ingested_dir)
 
@@ -36,6 +36,8 @@ class DataIngestion:
         self.logger.log_message("Trying to export data into feature store")
         try:
             self.df=self.database.export_as_dataframe()
+            print(os.path.exists(os.path.dirname(self.dataingestionconfig.sensor_file)))
+            os.makedirs(os.path.dirname(self.dataingestionconfig.sensor_file),exist_ok=True)
             self.df.to_csv(self.dataingestionconfig.sensor_file,index=False,header=True)
         except Exception as e:
             raise SensorException("Error occured while exporting data into feature store")
@@ -47,6 +49,8 @@ class DataIngestion:
         try:
             training_df,testing_df=train_test_split(df,test_size=self.dataingestionconfig.testing_split)
             self.logger.log_message("Sucessfully made train and test split")
+            os.makedirs(os.path.dirname(self.dataingestionconfig.training_file),exist_ok=True)
+            os.makedirs(os.path.dirname(self.dataingestionconfig.testing_file),exist_ok=True)
             training_df.to_csv(self.dataingestionconfig.training_file,index=False,header=True)
             testing_df.to_csv(self.dataingestionconfig.testing_file,index=False,header=True)
             self.logger.log_message("Sucessfully exported training and testing data into Ingested folder")

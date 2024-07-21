@@ -17,6 +17,9 @@ class ModelTrainer:
         self.modeltrainingconfig = modeltrainingconfig
         self.model=LogisticRegression(solver='lbfgs')
         self.logger=Logger(log_dir,'ModelTrainer.log')
+        if os.path.exists(self.modeltrainingconfig.modeltrainingfolder):
+            shutil.rmtree(self.modeltrainingconfig.modeltrainingfolder)
+        os.makedirs(self.modeltrainingconfig.modeltrainingfolder)
     def train_model(self):
         train,test=load_numpy_array(self.datatransformationartifact.transformed_train_path),load_numpy_array(self.datatransformationartifact.transformed_test_path)
         X_train,y_train=train[:,:-1],train[:,-1]
@@ -29,10 +32,10 @@ class ModelTrainer:
         self.logger.log_message("Sucessfully generated predictions")
         report=get_classification_report(y_train,train_predictions,y_test,test_predictions)
         self.logger.log_message("Sucessfully generated classification report")
-        if os.path.exists(self.modeltrainingconfig.trained_model_filepath):
-            os.remove(self.modeltrainingconfig.trained_model_filepath)
-        directory=os.path.dirname(self.modeltrainingconfig.trained_model_filepath)
-        os.makedirs(directory,exist_ok=True)
+        #if os.path.exists(self.modeltrainingconfig.trained_model_filepath):
+            #os.remove(self.modeltrainingconfig.trained_model_filepath)
+        #directory=os.path.dirname(self.modeltrainingconfig.trained_model_filepath)
+        #os.makedirs(directory,exist_ok=True)
         preprocessor_obj=load_object(self.datatransformationartifact.preprocessing_obj)
         sensor_model=SensorModel(preprocessor_obj,self.model)
 

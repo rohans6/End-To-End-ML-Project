@@ -45,5 +45,10 @@ from Sensor.Constant.training_pipeline import schema_file
 #evaluation_config=evaluator.evaluate_model()
 #print(evaluation_config)
 from Sensor.pipeline.training_pipeline import TrainingPipeline
+from Sensor.entity.config_entity import DataIngestionConfiguration,DataValidationConfiguration,DataTransformerConfiguration,ModelTrainerConfiguration,ModelPusherConfiguration,ModelEvaluatorConfiguration,TrainingPipelineConfig
+training_config=TrainingPipelineConfig()
+#data_ingestion_config=DataIngestionConfiguration(training_config)
+#data_ingester=DataIngestion(data_ingestion_config)
+#art=data_ingester.ingest_data()
 tr=TrainingPipeline()
 pusher_art=tr.start_pipeline()

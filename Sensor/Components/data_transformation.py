@@ -11,7 +11,8 @@ import pandas as pd
 import numpy as np
 from Sensor.utils.main_utils import save_numpy_array,save_object,read_yaml_file
 from Sensor.Constant.training_pipeline import schema_file
-
+import os
+import shutil
 class DataTransformer:
     def __init__(self,datavalidtionartifact,datatransformationconfig):
         self.datavalidationartifact=datavalidtionartifact
@@ -19,6 +20,9 @@ class DataTransformer:
         self.logger=Logger(log_dir,'DataTransformer.log')
         if not self.datavalidationartifact.validation_status:
             raise SensorException("Data validation failed. Please check the data validation artifact.")
+        if os.path.exists(self.datatransformationconfig.datatransformationfolder):
+                shutil.rmtree(self.datatransformationconfig.datatransformationfolder)
+        os.makedirs(self.datatransformationconfig.datatransformationfolder)
         self.preprocessor_obj=Pipeline([('PowerTransformer',PowerTransformer(method='yeo-johnson')),('Scaler',RobustScaler()),('KNN imputer',KNNImputer(n_neighbors=knearest_neighbors))])
         self.smt=SMOTE(sampling_strategy=resampling_strategy)
         self.drop_columns=read_yaml_file(schema_file)['drop_columns']

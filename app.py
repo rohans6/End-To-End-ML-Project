@@ -4,7 +4,7 @@ import joblib
 import os
 import pandas as pd
 from Sensor.ml.model.estimator import ModelResolver
-from Sensor.Constant.training_pipeline import project_directory,saved_model_dir
+from Sensor.Constant.training_pipeline import saved_model_dir
 from Sensor.exception import SensorException
 from Sensor.utils.main_utils import load_object,read_yaml_file
 from Sensor.Constant.training_pipeline import log_dir,schema_file
@@ -13,8 +13,8 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
-model_path=os.path.join(project_directory,saved_model_dir)
-model_resolver=ModelResolver(model_path)
+#model_path=os.path.join(project_directory,saved_model_dir)
+model_resolver=ModelResolver(saved_model_dir)
 drop_columns=read_yaml_file(schema_file)['drop_columns']
 @app.route('/')
 def index():
@@ -24,6 +24,8 @@ def train():
     try:
         # Initialize and start the training pipeline
         pipeline = TrainingPipeline()
+        if pipeline.is_running:
+            return jsonify({'message':'Training Pipeline is already running'})
         pusher_artifact = pipeline.start_pipeline()
         return jsonify({"message": "Training pipeline executed successfully", "pusher_artifact": str(pusher_artifact)})
     except Exception as e:
@@ -53,4 +55,4 @@ def predict():
         raise SensorException("Error occured while making prediction.")
     return jsonify({"message": str(df.columns)})
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0",port=8080,debug=True)

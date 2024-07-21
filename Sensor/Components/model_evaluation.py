@@ -1,5 +1,5 @@
 
-from Sensor.Constant.training_pipeline import log_dir,project_directory,saved_model_dir,model_name,schema_file
+from Sensor.Constant.training_pipeline import log_dir,saved_model_dir,model_name,schema_file
 from Sensor.utils.main_utils import read_yaml_file
 from Sensor.logger import Logger
 from Sensor.exception import SensorException
@@ -9,6 +9,7 @@ import os
 import pandas as pd
 from Sensor.utils.main_utils import load_object
 import sklearn.metrics as metrics
+import shutil
 class ModelEvaluation:
     def __init__(self,datavalidationartifact,modeltrainerartifact,modelevaluationconfig):
         try:
@@ -18,12 +19,15 @@ class ModelEvaluation:
             self.logger=Logger(log_dir,'ModelEvaluation.log')
             self.schema_file=read_yaml_file(schema_file)
             self.drop_cols=self.schema_file.get('drop_columns')
+            if os.path.exists(self.modelevaluationconfig.modelevaluatorfolder):
+                shutil.rmtree(self.modelevaluationconfig.modelevaluatorfolder)
+            os.makedirs(self.modelevaluationconfig.modelevaluatorfolder)
         except Exception as e:
             raise SensorException("Error occurred while reading modelevaluation config")
     def evaluate_model(self):
-        path=os.path.join(project_directory,saved_model_dir)
+        #path=os.path.join(project_directory,saved_model_dir)
         try:
-            model_resolver=ModelResolver(path)
+            model_resolver=ModelResolver(saved_model_dir)
             if not model_resolver.is_model_exists():
                 self.logger.log_message("No trained model found in the specified directory")
                 return ModelEvaluatorArtifact(True,None,self.modeltrainerartifact.trained_model_path)

@@ -20,8 +20,8 @@ import shutil
 
 
 # Remove previous Logs
-if os.path.exists("DataAcquisition\Logs\\consumer.log"):
-    os.remove("DataAcquisition\Logs\\consumer.log")
+#if os.path.exists("DataAcquisition\Logs\\consumer.log"):
+    #os.remove("DataAcquisition\Logs\\consumer.log")
 
 # Logging configuration
 logging.basicConfig(
@@ -34,7 +34,7 @@ logging.basicConfig(
 )
 
 # Consume data from Kafka
-kafka_config.update({'group.id':'group_consumer2','auto.offset.reset': 'earliest','enable.auto.commit':False})
+kafka_config.update({'group.id':'group_consumer21','auto.offset.reset': 'earliest','enable.auto.commit':False})
 consumer=Consumer(kafka_config)
 json_deserializer=JSONDeserializer(schema_string)
 for topic in os.listdir('Data'):    

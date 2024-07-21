@@ -12,10 +12,12 @@ import os
 from Sensor.cloud_storage.s3_syncer import S3Sync
 class TrainingPipeline:
     def __init__(self):
-        self.dataingestionconfig=DataIngestionConfiguration()
+        #self.dataingestionconfig=DataIngestionConfiguration()
         self.logger=Logger(log_dir, "training_pipeline.log")
         self.training_pipeline_config=TrainingPipelineConfig()
-        self.s3syncer = S3Sync()
+        self.dataingestionconfig=DataIngestionConfiguration(self.training_pipeline_config)
+        self.is_running=False
+        #self.s3syncer = S3Sync()
     def start_ingestion(self):
         try:
             self.ingester=DataIngestion(self.dataingestionconfig)
@@ -26,35 +28,35 @@ class TrainingPipeline:
             raise SensorException("Error occurred while ingesting data")
     def start_validation(self,dataingestionart):
         try:
-            self.validator=DataValidation(dataingestionart,DataValidationConfiguration())
+            self.validator=DataValidation(dataingestionart,DataValidationConfiguration(self.training_pipeline_config))
             datavalidationart=self.validator.validate_data()
             return datavalidationart
         except Exception as e:
             raise SensorException("Error occurred while validating data")
     def start_transformation(self,datavalidationart):
         try:
-            self.transformer=DataTransformer(datavalidationart,DataTransformerConfiguration())
+            self.transformer=DataTransformer(datavalidationart,DataTransformerConfiguration(self.training_pipeline_config))
             datatransformerart=self.transformer.transform_data()
             return datatransformerart
         except Exception as e:
             raise SensorException("Error occurred while transforming data")
     def start_model_trainer(self,datatransformerart):
         try:
-            self.trainer=ModelTrainer(datatransformerart,ModelTrainerConfiguration())
+            self.trainer=ModelTrainer(datatransformerart,ModelTrainerConfiguration(self.training_pipeline_config))
             modeltrainerart=self.trainer.train_model()
             return modeltrainerart
         except Exception as e:
             raise SensorException("Error occurred while training the model")
     def start_model_evaluator(self,datavalidationart,modeltrainerart):
         try:
-            self.evaluator=ModelEvaluation(datavalidationart,modeltrainerart,ModelEvaluatorConfiguration())
+            self.evaluator=ModelEvaluation(datavalidationart,modeltrainerart,ModelEvaluatorConfiguration(self.training_pipeline_config))
             evaluationart=self.evaluator.evaluate_model()
             return evaluationart
         except Exception as e:
             raise SensorException("Error occurred while evaluating the model")
     def start_pusher(self,evaluationart):
         try:
-            self.pusher=ModelPusher(evaluationart,ModelPusherConfiguration())
+            self.pusher=ModelPusher(evaluationart,ModelPusherConfiguration(self.training_pipeline_config))
             pusherart=self.pusher.push_model()
             return pusherart
         except Exception as e:
@@ -68,12 +70,14 @@ class TrainingPipeline:
             
     def sync_saved_model_dir_to_s3(self):
         try:
-            aws_buket_url = f"s3://sensor-fault/{os.path.join("saved_models")}"
+            saved_models=os.path.join("saved_models")
+            aws_buket_url = f"s3://sensor-fault/{saved_models}"
             self.s3_sync.sync_folder_to_s3(folder = os.path.join("saved_models"),aws_buket_url=aws_buket_url)
         except Exception as e:
             raise SensorException(e,sys)
     def start_pipeline(self):
         try:
+            self.is_running = True
             dataingestionart=self.start_ingestion()
             self.logger.log_message("Data ingestion completed successfully")
             datavalidationart=self.start_validation(dataingestionart)
@@ -89,10 +93,11 @@ class TrainingPipeline:
                 raise SensorException("Model evaluation result is not accepted")
             pusherart=self.start_pusher(evaluationart)
             self.logger.log_message("Model pushing completed successfully")
-            self.sync_artifact_dir_to_s3()
-            self.sync_saved_model_dir_to_s3()
+            self.is_running = False
+            #self.sync_artifact_dir_to_s3()
+            #self.sync_saved_model_dir_to_s3()
             return pusherart
         except Exception as e:
-            self.sync_artifact_dir_to_s3()
+            #self.sync_artifact_dir_to_s3()
             raise SensorException("Error occurred while running the training pipeline")
 
