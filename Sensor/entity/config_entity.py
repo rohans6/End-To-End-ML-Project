@@ -7,7 +7,6 @@ class TrainingPipelineConfig:
     def __init__(self,timestamp=datetime.now()):
         self.timestamp=timestamp.strftime("%Y-%m-%d")
         self.artifact_dir=f"{training_pipeline.artifact_dir}\\{self.timestamp}"
-        print(self.artifact_dir)
         self.pipeline_name=training_pipeline.pipeline_name
 
 # Define Data Ingestion Configuration

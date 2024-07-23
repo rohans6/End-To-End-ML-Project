@@ -10,6 +10,7 @@ from Sensor.exception import SensorException
 from Sensor.Constant.training_pipeline import log_dir
 import os
 from Sensor.cloud_storage.s3_syncer import S3Sync
+import sys
 class TrainingPipeline:
     def __init__(self):
         #self.dataingestionconfig=DataIngestionConfiguration()
@@ -17,7 +18,7 @@ class TrainingPipeline:
         self.training_pipeline_config=TrainingPipelineConfig()
         self.dataingestionconfig=DataIngestionConfiguration(self.training_pipeline_config)
         self.is_running=False
-        #self.s3syncer = S3Sync()
+        self.s3syncer = S3Sync()
     def start_ingestion(self):
         try:
             self.ingester=DataIngestion(self.dataingestionconfig)
@@ -94,10 +95,10 @@ class TrainingPipeline:
             pusherart=self.start_pusher(evaluationart)
             self.logger.log_message("Model pushing completed successfully")
             self.is_running = False
-            #self.sync_artifact_dir_to_s3()
-            #self.sync_saved_model_dir_to_s3()
+            self.sync_artifact_dir_to_s3()
+            self.sync_saved_model_dir_to_s3()
             return pusherart
         except Exception as e:
-            #self.sync_artifact_dir_to_s3()
+            self.sync_artifact_dir_to_s3()
             raise SensorException("Error occurred while running the training pipeline")
 
