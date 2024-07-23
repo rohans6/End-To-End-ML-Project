@@ -1,0 +1,1 @@
+975049949299.dkr.ecr.eu-north-1.amazonaws.com/sensorcontainerrepository
