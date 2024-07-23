@@ -1,0 +1,2 @@
+training_bucket='sensor_training_bucket'
+prediction_bucket='sensor_prediction_bucket'

@@ -8,8 +8,10 @@ from Sensor.entity.config_entity import DataIngestionConfiguration,DataValidatio
 from Sensor.logger import Logger
 from Sensor.exception import SensorException
 from Sensor.Constant.training_pipeline import log_dir
+from Sensor.Constant.s3_bucket import training_bucket,prediction_bucket
 import os
 from Sensor.cloud_storage.s3_syncer import S3Sync
+from Sensor.Constant.training_pipeline import saved_model_dir
 import sys
 class TrainingPipeline:
     def __init__(self):
@@ -64,7 +66,7 @@ class TrainingPipeline:
             raise SensorException("Error occurred while pushing the model")
     def sync_artifact_dir_to_s3(self):
         try:
-            aws_buket_url = f"s3://sensor-fault/artifact/{self.training_pipeline_config.timestamp}"
+            aws_buket_url = f"s3://{training_bucket}/artifact/{self.training_pipeline_config.timestamp}"
             self.s3_sync.sync_folder_to_s3(folder = self.training_pipeline_config.artifact_dir,aws_buket_url=aws_buket_url)
         except Exception as e:
             raise SensorException(e,sys)
@@ -72,8 +74,8 @@ class TrainingPipeline:
     def sync_saved_model_dir_to_s3(self):
         try:
             saved_models=os.path.join("saved_models")
-            aws_buket_url = f"s3://sensor-fault/{saved_models}"
-            self.s3_sync.sync_folder_to_s3(folder = os.path.join("saved_models"),aws_buket_url=aws_buket_url)
+            aws_buket_url = f"s3://{training_bucket}/{saved_model_dir}"
+            self.s3_sync.sync_folder_to_s3(folder = saved_model_dir,aws_buket_url=aws_buket_url)
         except Exception as e:
             raise SensorException(e,sys)
     def start_pipeline(self):
