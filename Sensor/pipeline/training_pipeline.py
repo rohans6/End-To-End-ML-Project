@@ -67,7 +67,7 @@ class TrainingPipeline:
     def sync_artifact_dir_to_s3(self):
         try:
             aws_buket_url = f"s3://{training_bucket}/artifact/{self.training_pipeline_config.timestamp}"
-            self.s3_sync.sync_folder_to_s3(folder = self.training_pipeline_config.artifact_dir,aws_buket_url=aws_buket_url)
+            self.s3syncer.sync_folder_to_s3(folder = self.training_pipeline_config.artifact_dir,aws_buket_url=aws_buket_url)
         except Exception as e:
             raise SensorException(e,sys)
             
@@ -75,7 +75,7 @@ class TrainingPipeline:
         try:
             saved_models=os.path.join("saved_models")
             aws_buket_url = f"s3://{training_bucket}/{saved_model_dir}"
-            self.s3_sync.sync_folder_to_s3(folder = saved_model_dir,aws_buket_url=aws_buket_url)
+            self.s3syncer.sync_folder_to_s3(folder = saved_model_dir,aws_buket_url=aws_buket_url)
         except Exception as e:
             raise SensorException(e,sys)
     def start_pipeline(self):
